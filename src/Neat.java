@@ -5,10 +5,13 @@ import java.util.List;
 class Neat {
 
     public static final int MAX_NODES = 1000;
-    public static final double WEIGHT_MUTATION_RATE = 0.02;
-    public static final double NODE_MUTATION_RATE = 0.03;
-    public static final double CONNECTION_MUTATION_RATE = 0.05;
-    public static final double ENABLE_MUTATION_RATE = 0.01;
+    public static final double MUTATE_LINK_RATE = 0.4;
+    public static final double MUTATE_NODE_RATE = 0.4;
+    public static final double MUTATE_WEIGHT_SHIFT_RATE = 0.4;
+    public static final double MUTATE_WEIGHT_RANDOM_RATE = 0.4;
+    public static final double MUTATE_TOGGLE_RATE = 0.4;
+    public static final double WEIGHT_SHIFT_STRENGTH = 0.3;
+    public static final double WEIGHT_RANDOM_STRENGTH = 1;
     public static final double C1 = 1.0;
     public static final double C2 = 1;
     public static final double C3 = 1;
@@ -97,11 +100,9 @@ class Neat {
     }
 
     public static void main(String[] args) {
-        Neat neat = new Neat(3,3,10);
+        Neat neat = new Neat(2,2,10);
 
-
-        Genome g = neat.emptyGenome();
-        System.out.println(g.getNodes().size());
+        new Frame((neat.emptyGenome()));
 
     }
 }
