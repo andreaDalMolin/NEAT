@@ -9,6 +9,9 @@ class Neat {
     public static final double NODE_MUTATION_RATE = 0.03;
     public static final double CONNECTION_MUTATION_RATE = 0.05;
     public static final double ENABLE_MUTATION_RATE = 0.01;
+    public static final double C1 = 1.0;
+    public static final double C2 = 1;
+    public static final double C3 = 1;
 
     private HashMap<ConnectionGene, ConnectionGene> allConnections = new HashMap<>();
     private List<NodeGene> allNodes = new ArrayList<>();
