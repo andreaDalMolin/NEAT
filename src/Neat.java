@@ -1,0 +1,104 @@
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+class Neat {
+
+    public static final int MAX_NODES = 1000;
+    public static final double WEIGHT_MUTATION_RATE = 0.02;
+    public static final double NODE_MUTATION_RATE = 0.03;
+    public static final double CONNECTION_MUTATION_RATE = 0.05;
+    public static final double ENABLE_MUTATION_RATE = 0.01;
+
+    private HashMap<ConnectionGene, ConnectionGene> allConnections = new HashMap<>();
+    private List<NodeGene> allNodes = new ArrayList<>();
+    private int inputSize;
+    private int outputSize;
+    private int maxClients;
+
+    public Neat(int inputSize, int outputSize, int clients) {
+         this.reset(inputSize, outputSize, clients);
+    }
+
+    public Genome emptyGenome () {
+        Genome g = new Genome(this);
+        for(int i = 0; i < inputSize + outputSize; i++){
+            g.getNodes().put(i+1, getNode(i+1));
+        }
+        return g;
+    }
+
+    private void reset(int inputSize, int outputSize, int clients) {
+        this.inputSize = inputSize;
+        this.outputSize = outputSize;
+        this.maxClients = clients;
+
+        allConnections.clear();
+        allNodes.clear();
+
+        for(int i = 0;i < inputSize; i++){
+            NodeGene n = getNode();
+            n.setX(0.1);
+            n.setY((i + 1) / (double)(inputSize + 1));
+        }
+
+        for(int i = 0; i < outputSize; i++){
+            NodeGene n = getNode();
+            n.setX(0.9);
+            n.setY((i + 1) / (double)(outputSize + 1));
+        }
+    }
+
+    /**
+     *  Copies a ConnectionGene
+     *
+     * @param connectionGene
+     * @return
+     */
+    public static ConnectionGene getConnection (ConnectionGene connectionGene) {
+        ConnectionGene c = new ConnectionGene(connectionGene.getFrom(), connectionGene.getTo());
+        c.setEnabled(connectionGene.isEnabled());
+        c.setInnovation_number(connectionGene.getInnovation_number());
+        c.setWeight(connectionGene.getWeight());
+
+        return c;
+    }
+
+    public ConnectionGene getConnection (NodeGene node1, NodeGene node2) {
+        ConnectionGene connectionGene = new ConnectionGene(node1, node2);
+
+        if (allConnections.containsKey(connectionGene)) {
+             connectionGene.setInnovation_number(allConnections.get(connectionGene).getInnovation_number());
+        } else {
+            connectionGene.setInnovation_number(allConnections.size() + 1);
+            allConnections.put(connectionGene, connectionGene);
+        }
+
+        return connectionGene;
+    }
+
+    /**
+     * Creates a totally new node
+     *
+     * @return a new NodeGene
+     */
+    public NodeGene getNode() {
+        NodeGene n = new NodeGene(allNodes.size() + 1);
+        allNodes.add(n);
+        return n;
+    }
+
+    public NodeGene getNode(int id) {
+        if (id <= allNodes.size()) return allNodes.get(id - 1);
+        return getNode();
+    }
+
+    public static void main(String[] args) {
+        Neat neat = new Neat(3,3,10);
+
+
+        Genome g = neat.emptyGenome();
+        System.out.println(g.getNodes().size());
+
+    }
+}
