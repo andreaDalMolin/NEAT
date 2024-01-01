@@ -1,3 +1,5 @@
+import model.Neat;
+
 public class Main {
     public static void main(String[] args) {
         double[][] xorInputs = {
@@ -16,7 +18,7 @@ public class Main {
         Neat neat = new Neat(populationSize, inputSize, outputSize);
 //        neat.initializePopulation();
 //
-//        FitnessEvaluator evaluator = new XORFitnessEvaluator();
+//        XOR.FitnessEvaluator evaluator = new XOR.XORFitnessEvaluator();
 //        evaluator.evaluateFitness(neat.population);
 
         // Evaluate fitness, perform evolution, etc. (These methods need to be implemented in NEAT class)

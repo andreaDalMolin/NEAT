@@ -1,3 +1,7 @@
+package XOR;
+
+import model.genes.Genome;
+
 import java.util.ArrayList;
 
 public class XORFitnessEvaluator implements FitnessEvaluator {

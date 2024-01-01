@@ -1,3 +1,9 @@
+package ui;
+
+import model.genes.ConnectionGene;
+import model.genes.Genome;
+import model.genes.NodeGene;
+
 import javax.swing.*;
 import java.awt.*;
 

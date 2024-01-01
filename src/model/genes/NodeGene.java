@@ -1,3 +1,5 @@
+package model.genes;
+
 public class NodeGene extends Gene {
     private double x,y;
 
@@ -28,7 +30,7 @@ public class NodeGene extends Gene {
 
     @Override
     public String toString() {
-        return "NodeGene{" +
+        return "model.genes.NodeGene{" +
                 "innovation_number=" + innovation_number +
                 '}';
     }

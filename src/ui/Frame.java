@@ -1,3 +1,7 @@
+package ui;
+
+import model.genes.Genome;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;

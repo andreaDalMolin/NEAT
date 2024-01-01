@@ -1,8 +1,15 @@
+package model;
+
+import model.genes.ConnectionGene;
+import model.genes.Genome;
+import model.genes.NodeGene;
+import ui.Frame;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-class Neat {
+public class Neat {
 
     public static final int MAX_NODES = 1000;
     public static final double MUTATE_LINK_RATE = 0.4;
@@ -56,7 +63,7 @@ class Neat {
     }
 
     /**
-     *  Copies a ConnectionGene
+     *  Copies a model.genes.ConnectionGene
      *
      * @param connectionGene
      * @return
@@ -86,7 +93,7 @@ class Neat {
     /**
      * Creates a totally new node
      *
-     * @return a new NodeGene
+     * @return a new model.genes.NodeGene
      */
     public NodeGene getNode() {
         NodeGene n = new NodeGene(allNodes.size() + 1);

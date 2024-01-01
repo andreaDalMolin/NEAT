@@ -1,3 +1,7 @@
+package model.genes;
+
+import model.Neat;
+
 public class ConnectionGene extends Gene {
 
     private NodeGene from;
@@ -50,7 +54,7 @@ public class ConnectionGene extends Gene {
 
     @Override
     public String toString() {
-        return "ConnectionGene{" +
+        return "model.genes.ConnectionGene{" +
                 "from=" + from.getInnovation_number() +
                 ", to=" + to.getInnovation_number() +
                 ", weight=" + weight +

@@ -1,3 +1,7 @@
+package model.genes;
+
+import model.Neat;
+
 import java.util.*;
 
 public class Genome {
@@ -239,7 +243,7 @@ public class Genome {
         Random random = new Random();
         int randomIndex = random.nextInt(entryList.size());
 
-        // Retrieve the random entry and extract the ConnectionGene object
+        // Retrieve the random entry and extract the model.genes.ConnectionGene object
         Map.Entry<Integer, ConnectionGene> randomEntry = entryList.get(randomIndex);
         return randomEntry.getValue();
     }
@@ -252,7 +256,7 @@ public class Genome {
         Random random = new Random();
         int randomIndex = random.nextInt(entryList.size());
 
-        // Retrieve the random entry and extract the NodeGene object
+        // Retrieve the random entry and extract the model.genes.NodeGene object
         Map.Entry<Integer, NodeGene> randomEntry = entryList.get(randomIndex);
         return randomEntry.getValue();
     }

@@ -1,3 +1,5 @@
+package model.genes;
+
 public class Gene {
 
     protected int innovation_number;
