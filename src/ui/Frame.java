@@ -6,6 +6,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Arrays;
 
 public class Frame extends JFrame {
     private Panel panel;
@@ -118,7 +119,10 @@ public class Frame extends JFrame {
             public void actionPerformed(ActionEvent e) {
 //                Calculator c = new Calculator(genome);
 //                System.out.println(Arrays.toString(c.calculate(1,1,1,1,1,1,1,1,1,1)));
-//                repaint();
+                double[] input = new double[] {1,1,1};
+                double[] output = genome.calculateOutput(input);
+                System.out.println(Arrays.toString(output));
+                repaint();
             }
         });
         menu.add(buttonG);

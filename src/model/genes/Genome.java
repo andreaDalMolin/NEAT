@@ -19,6 +19,72 @@ public class Genome {
         this.neat = neat;
     }
 
+    public double[] calculateOutput(double[] inputs) {
+        // Step 1: Set input values
+        setInputs(inputs);
+
+        // Step 1.5: Initialize connections for each node
+        initializeNodeConnections();
+
+        // Step 2: Forward propagation
+        forwardPropagation();
+
+        // Step 3: Collect and return output values
+        return getOutputs();
+    }
+
+    private void setInputs(double[] inputs) {
+        int inputIndex = 0;
+        for (NodeGene node : nodes.values()) {
+            if (node.getX() == 0.1 && inputIndex < inputs.length) { // Assuming 0.1 indicates input nodes
+                node.setOutput(inputs[inputIndex++]);
+            }
+        }
+    }
+
+    private void initializeNodeConnections() {
+        // Clear existing connections in each node
+        for (NodeGene node : nodes.values()) {
+            node.clearConnections();
+        }
+
+        // Add each connection to the corresponding nodes
+        for (ConnectionGene connection : connections.values()) {
+            NodeGene from = connection.getFrom();
+            NodeGene to = connection.getTo();
+
+            ConnectionGene con = new ConnectionGene(from, to);
+            con.setWeight(connection.getWeight());
+            con.setEnabled(connection.isEnabled());
+
+            to.addConnection(con);
+        }
+    }
+
+    private void forwardPropagation() {
+        // Assuming nodes are already sorted by x in TreeMap
+        for (NodeGene node : nodes.values()) {
+            if (node.getX() != 0.1) { // Skip input nodes
+                node.calculate();
+            }
+        }
+    }
+
+    private double[] getOutputs() {
+        List<Double> outputsList = new ArrayList<>();
+        for (NodeGene node : nodes.values()) {
+            if (node.getX() == 0.9) { // Assuming 0.9 indicates output nodes
+                outputsList.add(node.getOutput());
+            }
+        }
+
+        double[] outputs = new double[outputsList.size()];
+        for (int i = 0; i < outputs.length; i++) {
+            outputs[i] = outputsList.get(i);
+        }
+        return outputs;
+    }
+
     public void mutate() {
         if (Math.random() < Neat.MUTATE_LINK_RATE) {
             mutate_link();
