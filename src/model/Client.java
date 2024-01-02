@@ -8,7 +8,7 @@ public class Client {
     private double score;
     private Species species;
 
-    private double[] calculate(double[] inputs) {
+    public double[] calculate(double[] inputs) {
         return this.genome.calculateOutput(inputs);
     }
 
@@ -22,6 +22,10 @@ public class Client {
 
     public Genome getGenome() {
         return genome;
+    }
+
+    public void setGenome(Genome genome) {
+        this.genome = genome;
     }
 
     public double getScore() {

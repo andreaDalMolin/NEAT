@@ -190,19 +190,23 @@ public class Genome {
 
         int highestInnovationGene1 = 0;
         if(!g1.getConnections().isEmpty()){
-            highestInnovationGene1 = g1.getConnections().get(g1.getConnections().size()-1).getInnovation_number();
+            highestInnovationGene1 = g1.getConnections().keySet().stream().max(Integer::compare).get();
         }
 
         int highestInnovationGene2 = 0;
         if(!g2.getConnections().isEmpty()){
-            highestInnovationGene2 = g2.getConnections().get(g2.getConnections().size()-1).getInnovation_number();
+            highestInnovationGene2 = g2.getConnections().keySet().stream().max(Integer::compare).get();
         }
 
-        if (highestInnovationGene1 > highestInnovationGene2) {
+        if (highestInnovationGene1 < highestInnovationGene2) {
             Genome g = g1;
             g1 = g2;
             g2 = g;
         }
+
+        // Convert TreeMap values to ArrayLists for indexed access
+        List<ConnectionGene> g1Connections = new ArrayList<>(g1.getConnections().values());
+        List<ConnectionGene> g2Connections = new ArrayList<>(g2.getConnections().values());
 
         int index_g_1 = 0;
         int index_g_2 = 0;
@@ -213,8 +217,8 @@ public class Genome {
         int similar = 0;
 
         while (index_g_1 < g1.getConnections().size() && index_g_2 < g2.getConnections().size()) {
-            ConnectionGene gene1 = g1.getConnections().get(index_g_1);
-            ConnectionGene gene2 = g2.getConnections().get(index_g_2);
+            ConnectionGene gene1 = g1Connections.get(index_g_1);
+            ConnectionGene gene2 = g2Connections.get(index_g_2);
 
             int in1 = gene1.getInnovation_number();
             int in2 = gene2.getInnovation_number();
@@ -239,7 +243,10 @@ public class Genome {
         }
 
         excess = g1.getConnections().size() - index_g_1;
-        weight_diff = weight_diff / similar;
+
+        if (weight_diff > 0) {
+           weight_diff = weight_diff / similar;
+        }
 
         double N = Math.max(g1.getConnections().size(), g2.getConnections().size());
         if (N<20) {
@@ -259,10 +266,13 @@ public class Genome {
         int index_g_1 = 0;
         int index_g_2 = 0;
 
-        while (index_g_1 < g1.getConnections().size() && index_g_2 < g2.getConnections().size()) {
+        // Convert TreeMap values to ArrayLists for indexed access
+        List<ConnectionGene> g1Connections = new ArrayList<>(g1.getConnections().values());
+        List<ConnectionGene> g2Connections = new ArrayList<>(g2.getConnections().values());
 
-            ConnectionGene gene1 = g1.getConnections().get(index_g_1);
-            ConnectionGene gene2 = g2.getConnections().get(index_g_2);
+        while (index_g_1 < g1.getConnections().size() && index_g_2 < g2.getConnections().size()) {
+            ConnectionGene gene1 = g1Connections.get(index_g_1);
+            ConnectionGene gene2 = g2Connections.get(index_g_2);
 
             int in1 = gene1.getInnovation_number();
             int in2 = gene2.getInnovation_number();
@@ -291,7 +301,7 @@ public class Genome {
 
         while (index_g_1 < g1.getConnections().size()) {
 
-            ConnectionGene gene1 = g1.getConnections().get(index_g_1);
+            ConnectionGene gene1 = g1Connections.get(index_g_1);
             genome.getConnections().put(Neat.getConnection(gene1).getInnovation_number(), Neat.getConnection(gene1));
 
             index_g_1++;

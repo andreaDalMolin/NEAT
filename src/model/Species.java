@@ -7,7 +7,8 @@ import java.util.*;
 
 public class Species {
 
-    private Map<Double, Client> clients = new TreeMap<>();
+//    private Map<Double, Client> clients = new TreeMap<>();
+    private HashSet<Client> clients = new HashSet<>();
 
     private Client representative;
     private double score;
@@ -15,47 +16,45 @@ public class Species {
     public Species(Client representative) {
         this.representative = representative;
         this.representative.setSpecies(this);
-        clients.put(representative.getScore(), representative);
+        clients.add(representative);
         score = 0;
     }
 
     public boolean putClient(Client client) {
         if (client.distance(representative) < Neat.CP) {
-            this.representative.setSpecies(this);
-            clients.put(representative.getScore(), representative);
+            client.setSpecies(this);
+            clients.add(client);
             return true;
         }
         return false;
     }
 
-    public void forcePut () {
-        this.representative.setSpecies(this);
-        clients.put(representative.getScore(), representative);
+    public void forcePut (Client client) {
+        client.setSpecies(this);
+        clients.add(client);
     }
 
-    public void goExtinct () {
-        for(Client client : clients.values()) {
+    public void goExtinct() {
+        for (Client client : clients) {
             client.setSpecies(null);
         }
     }
 
-    public void evaluateScore () {
-        for (Client client : clients.values()) {
+    public void evaluateScore() {
+        score = 0; // Reset score to 0 before evaluation
+        for (Client client : clients) {
             score += client.getScore();
         }
         this.score = score / clients.size();
     }
 
-    public void reset () {
+    public void reset() {
         representative = getRandomClient();
-
-        for (Client client : clients.values()) {
+        for (Client client : clients) {
             client.setSpecies(null);
         }
-
         clients.clear();
-
-        clients.put(representative.getScore(), representative);
+        clients.add(representative);
         representative.setSpecies(this);
         score = 0;
     }
@@ -65,14 +64,12 @@ public class Species {
             throw new IllegalArgumentException("Percentage must be between 0 and 100");
         }
 
-        int totalClients = clients.size();
-        int clientsToRemove = (int) Math.ceil(totalClients * (percentage / 100.0));
+        int clientsToRemove = (int) Math.ceil(clients.size() * (percentage / 100.0));
+        List<Client> sortedClients = new ArrayList<>(clients);
+        sortedClients.sort(Comparator.comparingDouble(Client::getScore)); // Assuming Client has a getScore method
 
-        Iterator<Double> iterator = clients.keySet().iterator();
-        while (iterator.hasNext() && clientsToRemove > 0) {
-            iterator.next();
-            iterator.remove();
-            clientsToRemove--;
+        for (int i = 0; i < clientsToRemove; i++) {
+            clients.remove(sortedClients.get(i));
         }
     }
 
@@ -90,24 +87,9 @@ public class Species {
     }
 
     private Client getRandomClient() {
-        // Convert the TreeMap entries to a List
-        List<Map.Entry<Double, Client>> entryList = new ArrayList<>(clients.entrySet());
-
-        // Generate a random index
         Random random = new Random();
-        int randomIndex = random.nextInt(entryList.size());
-
-        // Retrieve the random entry and extract the model.genes.NodeGene object
-        Map.Entry<Double, Client> randomEntry = entryList.get(randomIndex);
-        return randomEntry.getValue();
-    }
-
-    public Map<Double, Client> getClients() {
-        return clients;
-    }
-
-    public Client getRepresentative() {
-        return representative;
+        int randomIndex = random.nextInt(clients.size());
+        return new ArrayList<>(clients).get(randomIndex);
     }
 
     public double getScore() {
