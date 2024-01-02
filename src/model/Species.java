@@ -69,9 +69,12 @@ public class Species {
         sortedClients.sort(Comparator.comparingDouble(Client::getScore)); // Assuming Client has a getScore method
 
         for (int i = 0; i < clientsToRemove; i++) {
-            clients.remove(sortedClients.get(i));
+            Client removedClient = sortedClients.get(i);
+            removedClient.setSpecies(null); // Set the species of the removed client to null
+            clients.remove(removedClient);
         }
     }
+
 
     public Genome breed () {
 
