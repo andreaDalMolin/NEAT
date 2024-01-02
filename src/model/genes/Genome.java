@@ -188,8 +188,15 @@ public class Genome {
 
         Genome g1 = this;
 
-        int highestInnovationGene1 = g1.getConnections().get(g1.getConnections().size()-1).getInnovation_number();
-        int highestInnovationGene2 = g2.getConnections().get(g2.getConnections().size()-1).getInnovation_number();
+        int highestInnovationGene1 = 0;
+        if(!g1.getConnections().isEmpty()){
+            highestInnovationGene1 = g1.getConnections().get(g1.getConnections().size()-1).getInnovation_number();
+        }
+
+        int highestInnovationGene2 = 0;
+        if(!g2.getConnections().isEmpty()){
+            highestInnovationGene2 = g2.getConnections().get(g2.getConnections().size()-1).getInnovation_number();
+        }
 
         if (highestInnovationGene1 > highestInnovationGene2) {
             Genome g = g1;

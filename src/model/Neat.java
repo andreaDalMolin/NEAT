@@ -22,6 +22,7 @@ public class Neat {
     public static final double C1 = 1.0;
     public static final double C2 = 1;
     public static final double C3 = 1;
+    public static final double CP = 4;
 
     private HashMap<ConnectionGene, ConnectionGene> allConnections = new HashMap<>();
     private List<NodeGene> allNodes = new ArrayList<>();
