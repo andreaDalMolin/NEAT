@@ -80,7 +80,7 @@ public class NodeGene extends Gene implements Comparable<NodeGene> {
     }
 
     private double sigmoid (double value) {
-        return 1d / (1 + Math.exp(-value));
+        return 1d / (1 + Math.exp(-4.9*value));
     }
 
     @Override

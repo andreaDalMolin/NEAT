@@ -10,7 +10,7 @@ import java.util.*;
 public class Neat {
 
     public static final int MAX_NODES = 1000;
-    public static final double MUTATE_LINK_RATE = 0.1;
+    public static final double MUTATE_LINK_RATE = 0.3;
     public static final double MUTATE_NODE_RATE = 0.03;
     public static final double MUTATE_WEIGHT_SHIFT_RATE = 0.02;
     public static final double MUTATE_WEIGHT_RANDOM_RATE = 0.02;
@@ -18,9 +18,9 @@ public class Neat {
     public static final double WEIGHT_SHIFT_STRENGTH = 0.3;
     public static final double WEIGHT_RANDOM_STRENGTH = 1;
     public static final double SURVIVORS = 80;
-    public static final double C1 = 1.0;
+    public static final double C1 = 1;
     public static final double C2 = 1;
-    public static final double C3 = 1;
+    public static final double C3 = 0.4;
     public static final double CP = 4;
 
     private HashMap<ConnectionGene, ConnectionGene> allConnections = new HashMap<>();
@@ -86,6 +86,16 @@ public class Neat {
         for(Client client : clients) {
             client.getGenome().calculateOutput(input);
         }
+    }
+
+    public void evolve () {
+
+        generateSpecies();
+        kill();
+        removeExtinct();
+        reproduce();
+        mutate();
+
     }
 
     private void mutate() {
@@ -219,23 +229,70 @@ public class Neat {
     }
 
     public static void main(String[] args) {
-        Neat neat = new Neat(10,1,1000);
+//        Neat neat = new Neat(10,1,1000);
+//
+//        double[] in = new double[10];
+//        for (int i = 0; i < 10; i++) {
+//            in[i] = Math.random();
+//        }
+//
+//        for (int i = 0; i < 100; i++) {
+//            for (Client client : neat.clients) {
+//                double score = client.calculate(in)[0];
+//                client.setScore(score);
+//            }
+//            neat.evolve(in);
+//            neat.printSpecies();
+//        }
+//
+//        new Frame((neat.getClient(0).getGenome()));
 
-        double[] in = new double[10];
-        for (int i = 0; i < 10; i++) {
-            in[i] = Math.random();
-        }
+        Neat neat = new Neat(2, 1, 1000); // 2 inputs, 1 output, 1000 clients
 
-        for (int i = 0; i < 100; i++) {
+        // XOR input and output pairs
+        double[][] inputs = {{0, 0}, {0, 1}, {1, 0}, {1, 1}};
+        double[] expectedOutputs = {0, 1, 1, 0};
+
+        // Evolve over several generations
+        for (int generation = 0; generation < 50; generation++) {
             for (Client client : neat.clients) {
-                double score = client.calculate(in)[0];
-                client.setScore(score);
+                double fitness = 0;
+                for (int i = 0; i < inputs.length; i++) {
+                    double[] output = client.calculate(inputs[i]);
+                    double error = Math.abs(expectedOutputs[i] - output[0]);
+                    fitness += 1 - error; // Fitness based on closeness to expected XOR output
+                }
+                client.setScore(fitness);
             }
-            neat.evolve(in);
-            neat.printSpecies();
+
+            neat.evolve(); // Evolve the population
         }
 
-//        new Frame((neat.emptyGenome()));
+        // Finding the best performing client
+        Client bestClient = null;
+        double bestFitness = -1;
+        for (Client client : neat.clients) {
+            if (client.getScore() > bestFitness) {
+                bestFitness = client.getScore();
+                bestClient = client;
+            }
+        }
+
+        // Demonstrating XOR with the best client
+        if (bestClient != null) {
+            System.out.println("Demonstrating XOR with the best model:");
+            System.out.println("Input1, Input2 -> Predicted Output : Actual Output");
+
+            for (int i = 0; i < inputs.length; i++) {
+                double[] output = bestClient.calculate(inputs[i]);
+                System.out.println(inputs[i][0] + ", " + inputs[i][1] + " -> " + output[0] + " : " + expectedOutputs[i]);
+            }
+        } else {
+            System.out.println("No suitable model found for demonstrating XOR.");
+        }
+
+        // After the evolution, you can examine the fittest networks to see if they solve XOR
+        new Frame((neat.getClient(0).getGenome()));
 
     }
 }
