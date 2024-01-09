@@ -17,7 +17,7 @@ public class Neat {
     public static final double MUTATE_TOGGLE_RATE = 0.2;
     public static final double WEIGHT_SHIFT_STRENGTH = 0.3;
     public static final double WEIGHT_RANDOM_STRENGTH = 1;
-    public static final double SURVIVORS = 80;
+    public static final double SURVIVAL_PERCENTAGE = 80;
     public static final double C1 = 1;
     public static final double C2 = 1;
     public static final double C3 = 0.4;
@@ -109,7 +109,7 @@ public class Neat {
 
     private void eliminateWeakIndividuals() {
         for (Species species : species) {
-            species.kill(100 - SURVIVORS);
+            species.kill(100 - SURVIVAL_PERCENTAGE);
         }
     }
 
@@ -199,31 +199,46 @@ public class Neat {
 
     public static void main(String[] args) {
 
-        Neat neat = new Neat(3, 1, 1000);
+        Neat neat = new Neat(3, 1, 250); // Initialize NEAT with 3 inputs, 1 output, and 250 individuals
 
+        // XOR input and output pairs
         double[][] inputs = {{0, 0, 1}, {0, 1, 1}, {1, 0, 1}, {1, 1, 1}};
         double[] expectedOutputs = {0, 1, 1, 0};
 
-        // Evolve over several generations
-        for (int generation = 0; generation < 100; generation++) {
+        double fitnessThreshold = 3.9; // Define a fitness threshold for satisfactory performance
+        double bestFitness = 0;
+        int generation = 0;
+
+        while (bestFitness < fitnessThreshold) {
+            bestFitness = 0; // Reset best fitness for each generation
             for (Individual individual : neat.individuals) {
                 double fitness = 0;
                 for (int i = 0; i < inputs.length; i++) {
                     double[] output = individual.calculateOutput(inputs[i]);
                     double error = Math.abs(expectedOutputs[i] - output[0]);
-                    fitness += 1 - error;
+                    fitness += 1 - error; // Fitness based on closeness to expected XOR output
                 }
                 individual.setScore(fitness);
+                if (fitness > bestFitness) {
+                    bestFitness = fitness;
+                }
             }
 
+            System.out.println("Generation " + generation + " - Best Fitness: " + bestFitness);
             neat.evolvePopulation();
+
+            if (bestFitness >= fitnessThreshold) {
+                System.out.println("Satisfactory fitness level reached at Generation " + generation);
+                break;
+            }
+
+            generation++;
         }
 
+        // Finding and displaying the best performing individual
         Individual bestIndividual = null;
-        double bestFitness = -1;
         for (Individual individual : neat.individuals) {
-            if (individual.getScore() > bestFitness) {
-                bestFitness = individual.getScore();
+            if (bestIndividual == null || individual.getScore() > bestIndividual.getScore()) {
                 bestIndividual = individual;
             }
         }
@@ -236,11 +251,10 @@ public class Neat {
                 double[] output = bestIndividual.calculateOutput(inputs[i]);
                 System.out.println(inputs[i][0] + ", " + inputs[i][1] + " -> " + output[0] + " : " + expectedOutputs[i]);
             }
+
+            new Frame(bestIndividual.getGenome()); // Display the network of the best individual
         } else {
-            System.out.println("No suitable model found for demonstrating XOR");
+            System.out.println("No suitable model found for demonstrating XOR.");
         }
-
-        new Frame((neat.getIndividual(0).getGenome()));
-
     }
 }
