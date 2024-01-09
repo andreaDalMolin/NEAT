@@ -14,10 +14,6 @@ public class Panel extends JPanel {
     public Panel() {
     }
 
-    public Genome getGenome() {
-        return genome;
-    }
-
     public void setGenome(Genome genome) {
         this.genome = genome;
     }

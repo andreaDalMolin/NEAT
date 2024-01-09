@@ -140,14 +140,6 @@ public class Neat {
         }
     }
 
-    public Species getRandomSpecies() {
-        if (species.isEmpty()) return null;
-
-        Random random = new Random();
-        int randomIndex = random.nextInt(species.size());
-        return species.get(randomIndex);
-    }
-
     public static ConnectionGene getConnection (ConnectionGene connectionGene) {
         ConnectionGene c = new ConnectionGene(connectionGene.getFrom(), connectionGene.getTo());
         c.setEnabled(connectionGene.isEnabled());
@@ -155,10 +147,6 @@ public class Neat {
         c.setWeight(connectionGene.getWeight());
 
         return c;
-    }
-
-    public Individual getIndividual(int index) {
-        return individuals.get(index);
     }
 
     public ConnectionGene getConnection (NodeGene node1, NodeGene node2) {
@@ -190,33 +178,25 @@ public class Neat {
         return getNode();
     }
 
-    public void printSpecies () {
-        System.out.println("################################");
-        for (Species species : species) {
-            System.out.println(species + " " + species.getScore() + " Individuals " + species.size());
-        }
-    }
-
     public static void main(String[] args) {
 
-        Neat neat = new Neat(3, 1, 250); // Initialize NEAT with 3 inputs, 1 output, and 250 individuals
+        Neat neat = new Neat(3, 1, 250);
 
-        // XOR input and output pairs
         double[][] inputs = {{0, 0, 1}, {0, 1, 1}, {1, 0, 1}, {1, 1, 1}};
         double[] expectedOutputs = {0, 1, 1, 0};
 
-        double fitnessThreshold = 3.9; // Define a fitness threshold for satisfactory performance
+        double fitnessThreshold = 3.9;
         double bestFitness = 0;
         int generation = 0;
 
         while (bestFitness < fitnessThreshold) {
-            bestFitness = 0; // Reset best fitness for each generation
+            bestFitness = 0;
             for (Individual individual : neat.individuals) {
                 double fitness = 0;
                 for (int i = 0; i < inputs.length; i++) {
                     double[] output = individual.calculateOutput(inputs[i]);
                     double error = Math.abs(expectedOutputs[i] - output[0]);
-                    fitness += 1 - error; // Fitness based on closeness to expected XOR output
+                    fitness += 1 - error;
                 }
                 individual.setScore(fitness);
                 if (fitness > bestFitness) {
@@ -235,7 +215,6 @@ public class Neat {
             generation++;
         }
 
-        // Finding and displaying the best performing individual
         Individual bestIndividual = null;
         for (Individual individual : neat.individuals) {
             if (bestIndividual == null || individual.getScore() > bestIndividual.getScore()) {
@@ -252,7 +231,7 @@ public class Neat {
                 System.out.println(inputs[i][0] + ", " + inputs[i][1] + " -> " + output[0] + " : " + expectedOutputs[i]);
             }
 
-            new Frame(bestIndividual.getGenome()); // Display the network of the best individual
+            new Frame(bestIndividual.getGenome());
         } else {
             System.out.println("No suitable model found for demonstrating XOR.");
         }
