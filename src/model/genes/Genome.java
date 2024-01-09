@@ -10,10 +10,6 @@ import java.util.*;
  */
 public class Genome {
 
-    public Neat getNeat() {
-        return neat;
-    }
-
     private final Neat neat;
     private final Map<Integer, NodeGene> nodes = new TreeMap<>();
     private final Map<Integer, ConnectionGene> connections = new TreeMap<>();
@@ -22,6 +18,12 @@ public class Genome {
         this.neat = neat;
     }
 
+    /**
+     * Calculates the output of the neural network represented by this genome.
+     * The method performs forward propagation through the network.
+     * @param inputs The input values to the network.
+     * @return The output values from the network.
+     */
     public double[] calculateOutput(double[] inputs) {
         // Step 1: Set input values
         setInputs(inputs);
@@ -39,7 +41,7 @@ public class Genome {
     private void setInputs(double[] inputs) {
         int inputIndex = 0;
         for (NodeGene node : nodes.values()) {
-            if (node.getX() == 0.1 && inputIndex < inputs.length) { // Assuming 0.1 indicates input nodes
+            if (node.getType() == NodeType.INPUT && inputIndex < inputs.length) {
                 node.setOutput(inputs[inputIndex++]);
             }
         }
@@ -65,9 +67,8 @@ public class Genome {
     }
 
     private void forwardPropagation() {
-        // Assuming nodes are already sorted by x in TreeMap
         for (NodeGene node : nodes.values()) {
-            if (node.getX() != 0.1) { // Skip input nodes
+            if (node.getType() != NodeType.INPUT) { // Skip input nodes
                 node.calculateOutput();
             }
         }
@@ -76,7 +77,7 @@ public class Genome {
     private double[] getOutputs() {
         List<Double> outputsList = new ArrayList<>();
         for (NodeGene node : nodes.values()) {
-            if (node.getX() == 0.9) { // Assuming 0.9 indicates output nodes
+            if (node.getType() == NodeType.OUTPUT) {
                 outputsList.add(node.getOutput());
             }
         }
@@ -90,24 +91,23 @@ public class Genome {
 
     public void mutate() {
         if (Math.random() < Neat.MUTATE_LINK_RATE) {
-            mutate_link();
+            mutateLink();
         }
         if (Math.random() < Neat.MUTATE_NODE_RATE) {
-            mutate_node();
+            mutateNode();
         }
         if (Math.random() < Neat.MUTATE_WEIGHT_SHIFT_RATE) {
-            mutate_weight_shift();
+            mutateWeightShift();
         }
         if (Math.random() < Neat.MUTATE_WEIGHT_RANDOM_RATE) {
-            mutate_weight_random();
+            mutateWeightRandom();
         }
         if (Math.random() < Neat.MUTATE_TOGGLE_RATE) {
-            mutate_link_toggle();
+            mutateLinkToggle();
         }
     }
 
-    public void mutate_link() {
-
+    public void mutateLink() {
         for (int i = 0; i < 100; i++) {
 
             NodeGene a = getRandomNode();
@@ -137,7 +137,7 @@ public class Genome {
         }
     }
 
-    public void mutate_node() {
+    public void mutateNode() {
         ConnectionGene connectionGene = getRandomConnection();
 
         if (connectionGene == null) return;
@@ -163,7 +163,7 @@ public class Genome {
         nodes.put(middle.getInnovationNumber(), middle);
     }
 
-    public void mutate_weight_shift() {
+    public void mutateWeightShift() {
         ConnectionGene randomConnection = getRandomConnection();
 
         if(randomConnection != null) {
@@ -171,7 +171,7 @@ public class Genome {
         }
     }
 
-    public void mutate_weight_random() {
+    public void mutateWeightRandom() {
         ConnectionGene randomConnection = getRandomConnection();
 
         if(randomConnection != null) {
@@ -179,7 +179,7 @@ public class Genome {
         }
     }
 
-    public void mutate_link_toggle() {
+    public void mutateLinkToggle() {
         ConnectionGene randomConnection = getRandomConnection();
 
         if(randomConnection != null) {
@@ -188,7 +188,6 @@ public class Genome {
     }
 
     public double distance(Genome g2) {
-
         Genome g1 = this;
 
         int highestInnovationGene1 = 0;
@@ -211,44 +210,44 @@ public class Genome {
         List<ConnectionGene> g1Connections = new ArrayList<>(g1.getConnections().values());
         List<ConnectionGene> g2Connections = new ArrayList<>(g2.getConnections().values());
 
-        int index_g_1 = 0;
-        int index_g_2 = 0;
+        int indexG1 = 0;
+        int indexG2 = 0;
 
         double disjoint = 0;
         int excess;
-        double weight_diff = 0;
+        double weightDiff = 0;
         int similar = 0;
 
-        while (index_g_1 < g1.getConnections().size() && index_g_2 < g2.getConnections().size()) {
-            ConnectionGene gene1 = g1Connections.get(index_g_1);
-            ConnectionGene gene2 = g2Connections.get(index_g_2);
+        while (indexG1 < g1.getConnections().size() && indexG2 < g2.getConnections().size()) {
+            ConnectionGene gene1 = g1Connections.get(indexG1);
+            ConnectionGene gene2 = g2Connections.get(indexG2);
 
             int in1 = gene1.getInnovationNumber();
             int in2 = gene2.getInnovationNumber();
 
             if (in1 == in2) {
                 // Similar gene
-                index_g_1++;
-                index_g_2++;
+                indexG1++;
+                indexG2++;
 
                 similar++;
-                weight_diff += Math.abs(gene1.getWeight() - gene2.getWeight());
+                weightDiff += Math.abs(gene1.getWeight() - gene2.getWeight());
 
             } else if (in1 > in2) {
                 //Disjoint gene of 2
-                index_g_2++;
+                indexG2++;
                 disjoint++;
             } else {
                 //Disjoint gene of 1
-                index_g_1++;
+                indexG1++;
                 disjoint++;
             }
         }
 
-        excess = g1.getConnections().size() - index_g_1;
+        excess = g1.getConnections().size() - indexG1;
 
-        if (weight_diff > 0) {
-           weight_diff = weight_diff / similar;
+        if (weightDiff > 0) {
+           weightDiff = weightDiff / similar;
         }
 
         double N = Math.max(g1.getConnections().size(), g2.getConnections().size());
@@ -256,23 +255,22 @@ public class Genome {
             N = 1;
         }
 
-        return ((Neat.C1*excess) / N) + ((Neat.C2*disjoint) / N) + (Neat.C3*weight_diff);
+        return ((Neat.C1*excess) / N) + ((Neat.C2*disjoint) / N) + (Neat.C3*weightDiff);
     }
 
     public static Genome crossover(Genome g1, Genome g2) {
-
         Genome genome = g1.getNeat().emptyGenome();
 
-        int index_g_1 = 0;
-        int index_g_2 = 0;
+        int indexG1 = 0;
+        int indexG2 = 0;
 
         // Convert TreeMap values to ArrayLists for indexed access
         List<ConnectionGene> g1Connections = new ArrayList<>(g1.getConnections().values());
         List<ConnectionGene> g2Connections = new ArrayList<>(g2.getConnections().values());
 
-        while (index_g_1 < g1.getConnections().size() && index_g_2 < g2.getConnections().size()) {
-            ConnectionGene gene1 = g1Connections.get(index_g_1);
-            ConnectionGene gene2 = g2Connections.get(index_g_2);
+        while (indexG1 < g1.getConnections().size() && indexG2 < g2.getConnections().size()) {
+            ConnectionGene gene1 = g1Connections.get(indexG1);
+            ConnectionGene gene2 = g2Connections.get(indexG2);
 
             int in1 = gene1.getInnovationNumber();
             int in2 = gene2.getInnovationNumber();
@@ -286,25 +284,25 @@ public class Genome {
                     genome.getConnections().put(Neat.getConnection(gene2).getInnovationNumber(), Neat.getConnection(gene2));
                 }
 
-                index_g_1++;
-                index_g_2++;
+                indexG1++;
+                indexG2++;
             } else if (in1 > in2) {
                 //Disjoint gene of 2
-                index_g_2++;
+                indexG2++;
             } else {
                 //Disjoint gene of 1
                 genome.getConnections().put(Neat.getConnection(gene1).getInnovationNumber(), Neat.getConnection(gene1));
 
-                index_g_1++;
+                indexG1++;
             }
         }
 
-        while (index_g_1 < g1.getConnections().size()) {
+        while (indexG1 < g1.getConnections().size()) {
 
-            ConnectionGene gene1 = g1Connections.get(index_g_1);
+            ConnectionGene gene1 = g1Connections.get(indexG1);
             genome.getConnections().put(Neat.getConnection(gene1).getInnovationNumber(), Neat.getConnection(gene1));
 
-            index_g_1++;
+            indexG1++;
 
         }
 
@@ -314,6 +312,10 @@ public class Genome {
         }
 
         return genome;
+    }
+
+    public Neat getNeat() {
+        return neat;
     }
 
     private ConnectionGene getRandomConnection() {

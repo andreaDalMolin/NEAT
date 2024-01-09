@@ -55,7 +55,7 @@ public class Frame extends JFrame {
         buttonB.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                genome.mutate_weight_random();
+                genome.mutateWeightRandom();
                 repaint();
             }
         });
@@ -65,7 +65,7 @@ public class Frame extends JFrame {
         buttonZ.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                genome.mutate_weight_shift();
+                genome.mutateWeightShift();
                 repaint();
             }
         });
@@ -75,7 +75,7 @@ public class Frame extends JFrame {
         buttonC.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                genome.mutate_link();
+                genome.mutateLink();
                 repaint();
             }
         });
@@ -85,7 +85,7 @@ public class Frame extends JFrame {
         buttonD.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                genome.mutate_node();
+                genome.mutateNode();
                 repaint();
             }
         });
@@ -97,7 +97,7 @@ public class Frame extends JFrame {
         buttonE.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                genome.mutate_link_toggle();
+                genome.mutateLinkToggle();
                 repaint();
             }
         });

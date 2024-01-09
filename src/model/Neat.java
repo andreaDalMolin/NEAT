@@ -10,7 +10,6 @@ import java.util.*;
 
 public class Neat {
 
-    public static final int MAX_NODES = 1000;
     public static final double MUTATE_LINK_RATE = 0.3;
     public static final double MUTATE_NODE_RATE = 0.03;
     public static final double MUTATE_WEIGHT_SHIFT_RATE = 0.02;
@@ -24,16 +23,15 @@ public class Neat {
     public static final double C3 = 0.4;
     public static final double CP = 4;
 
-    private HashMap<ConnectionGene, ConnectionGene> allConnections = new HashMap<>();
-    private List<NodeGene> allNodes = new ArrayList<>();
+    private final HashMap<ConnectionGene, ConnectionGene> allConnections = new HashMap<>();
+    private final List<NodeGene> allNodes = new ArrayList<>();
     private int inputSize;
     private int outputSize;
-    private int maxClients;
-    private ArrayList<Individual> individuals = new ArrayList<>();
-    private ArrayList<Species> species = new ArrayList<>();
+    private final ArrayList<Individual> individuals = new ArrayList<>();
+    private final ArrayList<Species> species = new ArrayList<>();
 
-    public Neat(int inputSize, int outputSize, int clients) {
-         this.reset(inputSize, outputSize, clients);
+    public Neat(int inputSize, int outputSize, int individuals) {
+         this.initialize(inputSize, outputSize, individuals);
     }
 
     public Genome emptyGenome () {
@@ -44,10 +42,9 @@ public class Neat {
         return g;
     }
 
-    private void reset(int inputSize, int outputSize, int clients) {
+    private void initialize(int inputSize, int outputSize, int individuals) {
         this.inputSize = inputSize;
         this.outputSize = outputSize;
-        this.maxClients = clients;
 
         allConnections.clear();
         allNodes.clear();
@@ -65,42 +62,28 @@ public class Neat {
             n.setY((i + 1) / (double)(outputSize + 1));
         }
 
-        for (int i = 0; i < maxClients; i++) {
+        for (int i = 0; i < individuals; i++) {
             Individual individual = new Individual();
             individual.setGenome(emptyGenome());
             this.individuals.add(individual);
         }
     }
 
-    public Individual getClient (int index) {
-        return individuals.get(index);
-    }
-
-    public void evolve () {
-
+    public void evolvePopulation() {
         generateSpecies();
-        kill();
-        prune();
-        reproduce();
-        mutate();
-
+        eliminateWeakIndividuals();
+        removeEmptySpecies();
+        reproducePopulation();
+        mutatePopulation();
     }
 
-    private void mutate() {
+    private void mutatePopulation() {
         for (Individual individual : individuals) {
             individual.mutate();
         }
     }
 
-    private void reproduce() {
-//        for (Client client : clients) {
-//            if (client.getSpecies() == null) {
-//                Species randomSpecies = getRandomSpecies();
-//                client.setGenome(randomSpecies.breed());
-//                randomSpecies.forcePut(client);
-//            }
-//        }
-
+    private void reproducePopulation() {
         RandomSelector<Species> selector = new RandomSelector<>();
         for(Species s:species){
             selector.add(s, s.getScore());
@@ -115,7 +98,7 @@ public class Neat {
         }
     }
 
-    private void prune() {
+    private void removeEmptySpecies() {
         for(int i = species.size()-1; i>= 0; i--){
             if(species.get(i).size() <= 1){
                 species.get(i).goExtinct();
@@ -124,7 +107,7 @@ public class Neat {
         }
     }
 
-    private void kill() {
+    private void eliminateWeakIndividuals() {
         for (Species species : species) {
             species.kill(100 - SURVIVORS);
         }
@@ -165,12 +148,6 @@ public class Neat {
         return species.get(randomIndex);
     }
 
-    /**
-     *  Copies a model.genes.ConnectionGene
-     *
-     * @param connectionGene
-     * @return
-     */
     public static ConnectionGene getConnection (ConnectionGene connectionGene) {
         ConnectionGene c = new ConnectionGene(connectionGene.getFrom(), connectionGene.getTo());
         c.setEnabled(connectionGene.isEnabled());
@@ -178,6 +155,10 @@ public class Neat {
         c.setWeight(connectionGene.getWeight());
 
         return c;
+    }
+
+    public Individual getIndividual(int index) {
+        return individuals.get(index);
     }
 
     public ConnectionGene getConnection (NodeGene node1, NodeGene node2) {
@@ -218,7 +199,7 @@ public class Neat {
 
     public static void main(String[] args) {
 
-        Neat neat = new Neat(3, 1, 1000); // 2 inputs, 1 output, 1000 clients
+        Neat neat = new Neat(3, 1, 1000); // 2 inputs, 1 output, 1000 individuals
 
         // XOR input and output pairs
         double[][] inputs = {{0, 0, 1}, {0, 1, 1}, {1, 0, 1}, {1, 1, 1}};
@@ -236,10 +217,10 @@ public class Neat {
                 individual.setScore(fitness);
             }
 
-            neat.evolve(); // Evolve the population
+            neat.evolvePopulation(); // Evolve the population
         }
 
-        // Finding the best performing client
+        // Finding the best performing individual
         Individual bestIndividual = null;
         double bestFitness = -1;
         for (Individual individual : neat.individuals) {
@@ -258,11 +239,11 @@ public class Neat {
                 System.out.println(inputs[i][0] + ", " + inputs[i][1] + " -> " + output[0] + " : " + expectedOutputs[i]);
             }
         } else {
-            System.out.println("No suitable model found for demonstrating XOR bordel.");
+            System.out.println("No suitable model found for demonstrating XOR");
         }
 
         // After the evolution, you can examine the fittest networks to see if they solve XOR
-        new Frame((neat.getClient(0).getGenome()));
+        new Frame((neat.getIndividual(0).getGenome()));
 
     }
 }

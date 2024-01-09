@@ -15,8 +15,8 @@ public class NodeGene extends Gene implements Comparable<NodeGene> {
 
     private final List<ConnectionGene> connections = new ArrayList<>();
 
-    public NodeGene(int innovation_number) {
-        super(innovation_number);
+    public NodeGene(int innovationNumber) {
+        super(innovationNumber);
     }
 
     /**
