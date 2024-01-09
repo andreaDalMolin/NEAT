@@ -4,8 +4,8 @@ import java.util.ArrayList;
 
 public class RandomSelector<T> {
 
-    private ArrayList<T> objects = new ArrayList<>();
-    private ArrayList<Double> scores = new ArrayList<>();
+    private final ArrayList<T> objects = new ArrayList<>();
+    private final ArrayList<Double> scores = new ArrayList<>();
 
     private double totalScore = 0;
 
@@ -25,12 +25,6 @@ public class RandomSelector<T> {
             }
         }
         return null;
-    }
-
-    public void reset() {
-        objects.clear();
-        scores.clear();
-        totalScore = 0;
     }
 
 }

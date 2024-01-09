@@ -14,7 +14,7 @@ public class Neat {
     public static final double MUTATE_NODE_RATE = 0.03;
     public static final double MUTATE_WEIGHT_SHIFT_RATE = 0.02;
     public static final double MUTATE_WEIGHT_RANDOM_RATE = 0.02;
-    public static final double MUTATE_TOGGLE_RATE = 0;
+    public static final double MUTATE_TOGGLE_RATE = 0.2;
     public static final double WEIGHT_SHIFT_STRENGTH = 0.3;
     public static final double WEIGHT_RANDOM_STRENGTH = 1;
     public static final double SURVIVORS = 80;
@@ -199,28 +199,26 @@ public class Neat {
 
     public static void main(String[] args) {
 
-        Neat neat = new Neat(3, 1, 1000); // 2 inputs, 1 output, 1000 individuals
+        Neat neat = new Neat(3, 1, 1000);
 
-        // XOR input and output pairs
         double[][] inputs = {{0, 0, 1}, {0, 1, 1}, {1, 0, 1}, {1, 1, 1}};
         double[] expectedOutputs = {0, 1, 1, 0};
 
         // Evolve over several generations
-        for (int generation = 0; generation < 300; generation++) {
+        for (int generation = 0; generation < 100; generation++) {
             for (Individual individual : neat.individuals) {
                 double fitness = 0;
                 for (int i = 0; i < inputs.length; i++) {
                     double[] output = individual.calculateOutput(inputs[i]);
                     double error = Math.abs(expectedOutputs[i] - output[0]);
-                    fitness += 1 - error; // Fitness based on closeness to expected XOR output
+                    fitness += 1 - error;
                 }
                 individual.setScore(fitness);
             }
 
-            neat.evolvePopulation(); // Evolve the population
+            neat.evolvePopulation();
         }
 
-        // Finding the best performing individual
         Individual bestIndividual = null;
         double bestFitness = -1;
         for (Individual individual : neat.individuals) {
@@ -242,7 +240,6 @@ public class Neat {
             System.out.println("No suitable model found for demonstrating XOR");
         }
 
-        // After the evolution, you can examine the fittest networks to see if they solve XOR
         new Frame((neat.getIndividual(0).getGenome()));
 
     }

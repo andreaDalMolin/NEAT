@@ -12,17 +12,17 @@ import java.util.*;
 public class Species {
 
     private final HashSet<Individual> individualMembers = new HashSet<>();
-    private Individual bestOfTheRest;
+    private Individual champion;
     private double score;
 
     /**
      * Constructs a Species with an initial representative.
-     * @param bestOfTheRest The initial representative of the species.
+     * @param champion The initial representative of the species.
      */
-    public Species(Individual bestOfTheRest) {
-        this.bestOfTheRest = bestOfTheRest;
-        this.bestOfTheRest.setSpecies(this);
-        individualMembers.add(bestOfTheRest);
+    public Species(Individual champion) {
+        this.champion = champion;
+        this.champion.setSpecies(this);
+        individualMembers.add(champion);
         score = 0;
     }
 
@@ -32,7 +32,7 @@ public class Species {
      * @return True if added, false otherwise.
      */
     public boolean addIndividualIfCompatible(Individual individual) {
-        if (individual.distance(bestOfTheRest) < Neat.CP) {
+        if (individual.distance(champion) < Neat.CP) {
             individual.setSpecies(this);
             individualMembers.add(individual);
             return true;
@@ -75,13 +75,13 @@ public class Species {
      * The score is typically updated periodically based on the performance of its members.
      */
     public void reset() {
-        bestOfTheRest = getRandomClient();
+        champion = getRandomClient();
         for (Individual individual : individualMembers) {
             individual.setSpecies(null);
         }
         individualMembers.clear();
-        individualMembers.add(bestOfTheRest);
-        bestOfTheRest.setSpecies(this);
+        individualMembers.add(champion);
+        champion.setSpecies(this);
         score = 0;
     }
 
