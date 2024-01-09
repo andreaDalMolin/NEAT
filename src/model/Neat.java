@@ -3,6 +3,7 @@ package model;
 import model.genes.ConnectionGene;
 import model.genes.Genome;
 import model.genes.NodeGene;
+import model.genes.NodeType;
 import ui.Frame;
 
 import java.util.*;
@@ -28,7 +29,7 @@ public class Neat {
     private int inputSize;
     private int outputSize;
     private int maxClients;
-    private ArrayList<Client> clients = new ArrayList<>();
+    private ArrayList<Individual> individuals = new ArrayList<>();
     private ArrayList<Species> species = new ArrayList<>();
 
     public Neat(int inputSize, int outputSize, int clients) {
@@ -50,57 +51,44 @@ public class Neat {
 
         allConnections.clear();
         allNodes.clear();
-        this.clients.clear();
+        this.individuals.clear();
 
         for(int i = 0;i < inputSize; i++){
             NodeGene n = getNode();
-            n.setX(0.1);
+            n.setType(NodeType.INPUT);
             n.setY((i + 1) / (double)(inputSize + 1));
         }
 
         for(int i = 0; i < outputSize; i++){
             NodeGene n = getNode();
-            n.setX(0.9);
+            n.setType(NodeType.OUTPUT);
             n.setY((i + 1) / (double)(outputSize + 1));
         }
 
         for (int i = 0; i < maxClients; i++) {
-            Client client = new Client();
-            client.setGenome(emptyGenome());
-            this.clients.add(client);
+            Individual individual = new Individual();
+            individual.setGenome(emptyGenome());
+            this.individuals.add(individual);
         }
     }
 
-    public Client getClient (int index) {
-        return clients.get(index);
-    }
-
-    public void evolve (double[] input) {
-
-        generateSpecies();
-        kill();
-        removeExtinct();
-        reproduce();
-        mutate();
-
-        for(Client client : clients) {
-            client.getGenome().calculateOutput(input);
-        }
+    public Individual getClient (int index) {
+        return individuals.get(index);
     }
 
     public void evolve () {
 
         generateSpecies();
         kill();
-        removeExtinct();
+        prune();
         reproduce();
         mutate();
 
     }
 
     private void mutate() {
-        for (Client client : clients) {
-            client.mutate();
+        for (Individual individual : individuals) {
+            individual.mutate();
         }
     }
 
@@ -118,16 +106,16 @@ public class Neat {
             selector.add(s, s.getScore());
         }
 
-        for(Client c:clients){
+        for(Individual c: individuals){
             if(c.getSpecies() == null){
                 Species s = selector.random();
                 c.setGenome(s.breed());
-                s.forcePut(c);
+                s.addIndividual(c);
             }
         }
     }
 
-    private void removeExtinct() {
+    private void prune() {
         for(int i = species.size()-1; i>= 0; i--){
             if(species.get(i).size() <= 1){
                 species.get(i).goExtinct();
@@ -147,20 +135,20 @@ public class Neat {
             species.reset();
         }
 
-        for (Client client : clients) {
-            if (client.getSpecies() != null) continue;
+        for (Individual individual : individuals) {
+            if (individual.getSpecies() != null) continue;
 
             boolean found = false;
 
             for(Species species : species) {
-                if (species.putClient(client)) {
+                if (species.addIndividualIfCompatible(individual)) {
                     found = true;
                     break;
                 }
             }
 
             if (!found) {
-                species.add(new Species(client));
+                species.add(new Species(individual));
             }
         }
 
@@ -186,7 +174,7 @@ public class Neat {
     public static ConnectionGene getConnection (ConnectionGene connectionGene) {
         ConnectionGene c = new ConnectionGene(connectionGene.getFrom(), connectionGene.getTo());
         c.setEnabled(connectionGene.isEnabled());
-        c.setInnovation_number(connectionGene.getInnovation_number());
+        c.setInnovationNumber(connectionGene.getInnovationNumber());
         c.setWeight(connectionGene.getWeight());
 
         return c;
@@ -196,9 +184,9 @@ public class Neat {
         ConnectionGene connectionGene = new ConnectionGene(node1, node2);
 
         if (allConnections.containsKey(connectionGene)) {
-             connectionGene.setInnovation_number(allConnections.get(connectionGene).getInnovation_number());
+             connectionGene.setInnovationNumber(allConnections.get(connectionGene).getInnovationNumber());
         } else {
-            connectionGene.setInnovation_number(allConnections.size() + 1);
+            connectionGene.setInnovationNumber(allConnections.size() + 1);
             allConnections.put(connectionGene, connectionGene);
         }
 
@@ -229,66 +217,48 @@ public class Neat {
     }
 
     public static void main(String[] args) {
-//        Neat neat = new Neat(10,1,1000);
-//
-//        double[] in = new double[10];
-//        for (int i = 0; i < 10; i++) {
-//            in[i] = Math.random();
-//        }
-//
-//        for (int i = 0; i < 100; i++) {
-//            for (Client client : neat.clients) {
-//                double score = client.calculate(in)[0];
-//                client.setScore(score);
-//            }
-//            neat.evolve(in);
-//            neat.printSpecies();
-//        }
-//
-//        new Frame((neat.getClient(0).getGenome()));
 
-        Neat neat = new Neat(2, 1, 1000); // 2 inputs, 1 output, 1000 clients
+        Neat neat = new Neat(3, 1, 1000); // 2 inputs, 1 output, 1000 clients
 
         // XOR input and output pairs
-        double[][] inputs = {{0, 0}, {0, 1}, {1, 0}, {1, 1}};
+        double[][] inputs = {{0, 0, 1}, {0, 1, 1}, {1, 0, 1}, {1, 1, 1}};
         double[] expectedOutputs = {0, 1, 1, 0};
 
         // Evolve over several generations
-        for (int generation = 0; generation < 50; generation++) {
-            for (Client client : neat.clients) {
+        for (int generation = 0; generation < 300; generation++) {
+            for (Individual individual : neat.individuals) {
                 double fitness = 0;
                 for (int i = 0; i < inputs.length; i++) {
-                    double[] output = client.calculate(inputs[i]);
+                    double[] output = individual.calculateOutput(inputs[i]);
                     double error = Math.abs(expectedOutputs[i] - output[0]);
                     fitness += 1 - error; // Fitness based on closeness to expected XOR output
                 }
-                client.setScore(fitness);
+                individual.setScore(fitness);
             }
 
             neat.evolve(); // Evolve the population
         }
 
         // Finding the best performing client
-        Client bestClient = null;
+        Individual bestIndividual = null;
         double bestFitness = -1;
-        for (Client client : neat.clients) {
-            if (client.getScore() > bestFitness) {
-                bestFitness = client.getScore();
-                bestClient = client;
+        for (Individual individual : neat.individuals) {
+            if (individual.getScore() > bestFitness) {
+                bestFitness = individual.getScore();
+                bestIndividual = individual;
             }
         }
 
-        // Demonstrating XOR with the best client
-        if (bestClient != null) {
+        if (bestIndividual != null) {
             System.out.println("Demonstrating XOR with the best model:");
             System.out.println("Input1, Input2 -> Predicted Output : Actual Output");
 
             for (int i = 0; i < inputs.length; i++) {
-                double[] output = bestClient.calculate(inputs[i]);
+                double[] output = bestIndividual.calculateOutput(inputs[i]);
                 System.out.println(inputs[i][0] + ", " + inputs[i][1] + " -> " + output[0] + " : " + expectedOutputs[i]);
             }
         } else {
-            System.out.println("No suitable model found for demonstrating XOR.");
+            System.out.println("No suitable model found for demonstrating XOR bordel.");
         }
 
         // After the evolution, you can examine the fittest networks to see if they solve XOR

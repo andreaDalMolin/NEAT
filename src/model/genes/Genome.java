@@ -4,16 +4,19 @@ import model.Neat;
 
 import java.util.*;
 
+/**
+ * Represents a genome in the NEAT algorithm.
+ * A genome consists of a collection of nodes and connections, representing a neural network.
+ */
 public class Genome {
-
 
     public Neat getNeat() {
         return neat;
     }
 
-    private Neat neat;
-    private Map<Integer, NodeGene> nodes = new TreeMap<>();
-    private Map<Integer, ConnectionGene> connections = new TreeMap<>();
+    private final Neat neat;
+    private final Map<Integer, NodeGene> nodes = new TreeMap<>();
+    private final Map<Integer, ConnectionGene> connections = new TreeMap<>();
 
     public Genome(Neat neat) {
         this.neat = neat;
@@ -65,7 +68,7 @@ public class Genome {
         // Assuming nodes are already sorted by x in TreeMap
         for (NodeGene node : nodes.values()) {
             if (node.getX() != 0.1) { // Skip input nodes
-                node.calculate();
+                node.calculateOutput();
             }
         }
     }
@@ -129,7 +132,7 @@ public class Genome {
             connectionGene = neat.getConnection(connectionGene.getFrom(), connectionGene.getTo());
             connectionGene.setWeight((Math.random() * 2 - 1) * Neat.WEIGHT_RANDOM_STRENGTH);
 
-            connections.put(connectionGene.getInnovation_number(), connectionGene);
+            connections.put(connectionGene.getInnovationNumber(), connectionGene);
             return;
         }
     }
@@ -153,11 +156,11 @@ public class Genome {
         connection2.setWeight(connectionGene.getWeight());
         connection2.setEnabled(connection2.isEnabled());
 
-        connections.remove(connectionGene.getInnovation_number());
-        connections.put(connection1.getInnovation_number(), connection1);
-        connections.put(connection2.getInnovation_number(), connection2);
+        connections.remove(connectionGene.getInnovationNumber());
+        connections.put(connection1.getInnovationNumber(), connection1);
+        connections.put(connection2.getInnovationNumber(), connection2);
 
-        nodes.put(middle.getInnovation_number(), middle);
+        nodes.put(middle.getInnovationNumber(), middle);
     }
 
     public void mutate_weight_shift() {
@@ -212,7 +215,7 @@ public class Genome {
         int index_g_2 = 0;
 
         double disjoint = 0;
-        int excess = 0;
+        int excess;
         double weight_diff = 0;
         int similar = 0;
 
@@ -220,8 +223,8 @@ public class Genome {
             ConnectionGene gene1 = g1Connections.get(index_g_1);
             ConnectionGene gene2 = g2Connections.get(index_g_2);
 
-            int in1 = gene1.getInnovation_number();
-            int in2 = gene2.getInnovation_number();
+            int in1 = gene1.getInnovationNumber();
+            int in2 = gene2.getInnovationNumber();
 
             if (in1 == in2) {
                 // Similar gene
@@ -253,14 +256,11 @@ public class Genome {
             N = 1;
         }
 
-        double delta = ((Neat.C1*excess) / N) + ((Neat.C2*disjoint) / N) + (Neat.C3*weight_diff);
-
-        return delta;
+        return ((Neat.C1*excess) / N) + ((Neat.C2*disjoint) / N) + (Neat.C3*weight_diff);
     }
 
     public static Genome crossover(Genome g1, Genome g2) {
 
-        Neat neat = g1.getNeat();
         Genome genome = g1.getNeat().emptyGenome();
 
         int index_g_1 = 0;
@@ -274,16 +274,16 @@ public class Genome {
             ConnectionGene gene1 = g1Connections.get(index_g_1);
             ConnectionGene gene2 = g2Connections.get(index_g_2);
 
-            int in1 = gene1.getInnovation_number();
-            int in2 = gene2.getInnovation_number();
+            int in1 = gene1.getInnovationNumber();
+            int in2 = gene2.getInnovationNumber();
 
             if (in1 == in2) {
                 // Similar gene
 
                 if (Math.random() > 0.5) {
-                    genome.getConnections().put(Neat.getConnection(gene1).getInnovation_number(), Neat.getConnection(gene1));
+                    genome.getConnections().put(Neat.getConnection(gene1).getInnovationNumber(), Neat.getConnection(gene1));
                 } else {
-                    genome.getConnections().put(Neat.getConnection(gene2).getInnovation_number(), Neat.getConnection(gene2));
+                    genome.getConnections().put(Neat.getConnection(gene2).getInnovationNumber(), Neat.getConnection(gene2));
                 }
 
                 index_g_1++;
@@ -293,7 +293,7 @@ public class Genome {
                 index_g_2++;
             } else {
                 //Disjoint gene of 1
-                genome.getConnections().put(Neat.getConnection(gene1).getInnovation_number(), Neat.getConnection(gene1));
+                genome.getConnections().put(Neat.getConnection(gene1).getInnovationNumber(), Neat.getConnection(gene1));
 
                 index_g_1++;
             }
@@ -302,15 +302,15 @@ public class Genome {
         while (index_g_1 < g1.getConnections().size()) {
 
             ConnectionGene gene1 = g1Connections.get(index_g_1);
-            genome.getConnections().put(Neat.getConnection(gene1).getInnovation_number(), Neat.getConnection(gene1));
+            genome.getConnections().put(Neat.getConnection(gene1).getInnovationNumber(), Neat.getConnection(gene1));
 
             index_g_1++;
 
         }
 
         for (ConnectionGene c : genome.getConnections().values()) {
-             genome.getNodes().put(c.getFrom().getInnovation_number(), c.getFrom());
-             genome.getNodes().put(c.getTo().getInnovation_number(), c.getTo());
+             genome.getNodes().put(c.getFrom().getInnovationNumber(), c.getFrom());
+             genome.getNodes().put(c.getTo().getInnovationNumber(), c.getTo());
         }
 
         return genome;
@@ -319,27 +319,21 @@ public class Genome {
     private ConnectionGene getRandomConnection() {
         if (connections.isEmpty()) return null;
 
-        // Convert the TreeMap entries to a List
         List<Map.Entry<Integer, ConnectionGene>> entryList = new ArrayList<>(connections.entrySet());
 
-        // Generate a random index
         Random random = new Random();
         int randomIndex = random.nextInt(entryList.size());
 
-        // Retrieve the random entry and extract the model.genes.ConnectionGene object
         Map.Entry<Integer, ConnectionGene> randomEntry = entryList.get(randomIndex);
         return randomEntry.getValue();
     }
 
     private NodeGene getRandomNode() {
-        // Convert the TreeMap entries to a List
         List<Map.Entry<Integer, NodeGene>> entryList = new ArrayList<>(nodes.entrySet());
 
-        // Generate a random index
         Random random = new Random();
         int randomIndex = random.nextInt(entryList.size());
 
-        // Retrieve the random entry and extract the model.genes.NodeGene object
         Map.Entry<Integer, NodeGene> randomEntry = entryList.get(randomIndex);
         return randomEntry.getValue();
     }
